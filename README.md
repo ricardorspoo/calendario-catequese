@@ -1,4 +1,4 @@
-# Calendário Catequese
+# Calendário da Catequese
 
 Calendário das celebrações da catequese da Capela São Judas Tadeu, Paróquia Sagrada Família (Diocese de Guarulhos), para consulta dos catequistas.
 
