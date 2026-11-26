@@ -155,8 +155,11 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
 @media (max-width:480px){.grade{grid-template-columns:1fr}}
 
 @media (max-width:900px){
-  header.topo{grid-template-columns:1fr 1fr;grid-template-areas:"esq dir" "txt txt";gap:12px 18px;padding-top:16px}
-  .topo .esq{justify-self:end} .topo .dir{justify-self:start}
+  /* Tela estreita: as quatro marcas em quatro colunas iguais, cada uma centrada na sua. */
+  header.topo{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:none;gap:12px 0;padding-top:16px;max-width:460px;margin:0 auto}
+  .topo .marcas{display:contents}
+  .topo img{justify-self:center;align-self:center;grid-row:1}
+  .topo .txt{grid-area:auto;grid-column:1 / -1;grid-row:2}
   .topo{--u:.72px}
 }
 @media (max-width:860px){
