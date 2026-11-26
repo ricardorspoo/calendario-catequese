@@ -230,7 +230,7 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
 
 <div class="fundo-modal" id="modalUsers" role="dialog" aria-modal="true" aria-labelledby="usersTitulo">
   <div class="modal largo">
-    <div class="modal-topo"><span id="usersTitulo">Usuários com acesso</span><button class="fechar" type="button" data-fecha aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="modal-topo"><span id="usersTitulo">Coordenadores</span><button class="fechar" type="button" data-fecha aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <div class="modal-corpo" id="usersCorpo"></div>
   </div>
 </div>
@@ -791,13 +791,13 @@ function desenhaUsers(msg, ok){
   var eds = Object.keys(acesso.editores).map(function(u){ return {uid:u, email:acesso.editores[u]}; }).sort(function(a,b){ return a.email < b.email ? -1 : 1; });
   var rev = Object.keys(acesso.revogados).map(function(u){ return {uid:u, email:acesso.revogados[u]}; }).sort(function(a,b){ return a.email < b.email ? -1 : 1; });
   var h = '<h4 style="margin-top:0">Quem pode editar</h4><ul class="cat-lista">'
-    + '<li><div><div class="nome">'+esc(sessao.email)+'</div><div class="turmas">Administrador (você). Convida e revoga os demais.</div></div></li>'
-    + eds.map(function(p){ return '<li><div><div class="nome">'+esc(p.email)+'</div><div class="turmas">Editor: grava datas, descrições e catequistas.</div></div><span class="acoes">'
+    + '<li><div><div class="nome">'+esc(sessao.email)+'</div><div class="turmas">Coordenador principal (você). Convida e revoga os demais.</div></div></li>'
+    + eds.map(function(p){ return '<li><div><div class="nome">'+esc(p.email)+'</div><div class="turmas">Coordenador: grava datas, descrições e catequistas.</div></div><span class="acoes">'
         + (revogando === p.uid ? '<button class="botao pequeno perigo" type="button" data-rv-ok="'+esc(p.uid)+'">'+IC.lixo+'Confirmar</button><button class="botao pequeno" type="button" data-rv-nao>Cancelar</button>'
                                : '<button class="botao pequeno perigo" type="button" data-rv="'+esc(p.uid)+'">Revogar acesso</button>')+'</span></li>'; }).join("")
     + '</ul>';
   if(rev.length) h += '<h4>Acesso revogado</h4><ul class="cat-lista">'+rev.map(function(p){ return '<li><div><div class="nome">'+esc(p.email)+'</div><div class="turmas">Não consegue mais gravar. A conta continua existindo.</div></div><span class="acoes"><button class="botao pequeno" type="button" data-lib="'+esc(p.uid)+'">Devolver acesso</button></span></li>'; }).join("")+'</ul>';
-  h += '<h4>Convidar alguém</h4><form id="formConvite"><div class="campo"><label for="uEmail">E-mail da pessoa</label><input type="email" id="uEmail" autocomplete="off"></div>'
+  h += '<h4>Convidar coordenador</h4><form id="formConvite"><div class="campo"><label for="uEmail">E-mail da pessoa</label><input type="email" id="uEmail" autocomplete="off"></div>'
     + '<p class="erro" id="uErro" role="alert">'+(ok ? "" : esc(msg || ""))+'</p><p class="ok" id="uOk" role="status">'+(ok ? esc(msg || "") : "")+'</p>'
     + '<div class="acoes"><button class="botao cheio" type="submit" id="btnConvidar">'+IC.salvar+'Convidar</button></div></form>'
     + '<p class="nota">A pessoa recebe um e-mail para criar a própria senha; você não fica sabendo qual é. Se o e-mail não chegar, ela pode usar "Esqueci minha senha" na tela de entrada.</p>';
@@ -832,7 +832,7 @@ function rotulos(){
   $("btnAdm").className = adm ? "botao" : "botao cheio";
   $("btnLimpar").innerHTML = IC.limpar+"Limpar filtros";
   $("btnCats").innerHTML = IC.pessoas+"Catequistas";
-  $("btnUsers").innerHTML = IC.cadeado+"Usuários";
+  $("btnUsers").innerHTML = IC.cadeado+"Coordenadores";
 }
 rotulos();
 $("btnSair").addEventListener("click", sair);
@@ -895,7 +895,7 @@ Armazem.iniciar(function(){
   if(sessao.logado && !sessao.podeEditar && !sessao.conferindo){
     Armazem.sair();
     focoAntes = $("btnAdm"); $("modalLogin").classList.add("aberto");
-    $("lErro").textContent = "Essa conta não tem permissão para editar. Fale com o coordenador.";
+    $("lErro").textContent = "Essa conta não tem permissão para editar. Fale com o coordenador principal.";
   }
   if($("modalUsers").classList.contains("aberto")){ if(sessao.admin){ if(!revogando) desenhaUsers(); } else fechaTudo(); }
 });
