@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendário Catequese</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,700&display=swap" rel="stylesheet">
+<style>
+/* Estetica dos calendarios da Diocese (fundo branco, azul dos meses, cores de marcacao)
+   com acabamento de aplicativo: cartoes por mes, faixa lateral na cor do tipo, botoes consistentes. */
+:root{
+  color-scheme:light;
+  --branco:#ffffff; --tinta:#16202e; --cinza:#5b6677; --borda:#d6dce6; --fundo-suave:#f5f7fb;
+  --azul:#2f5496; --azul-escuro:#223f73; --azul-claro:#e8eef8; --azul-titulo:#0070c0; --vermelho:#ff0000; --vermelho-escuro:#c00000;
+  --amarelo:#ffff00; --verde:#00ff00; --ciano:#00b0f0; --laranja:#f79646; --laranja-claro:#fef0e2; --laranja-escuro:#8a4a0a;
+  --corpo:"Source Sans 3",Calibri,Carlito,"Segoe UI",Arial,sans-serif;
+  --cursiva:"Lucida Calligraphy","Apple Chancery","URW Chancery L","Segoe Script",cursive;
+  --raio:10px; --sombra:0 1px 2px rgba(22,32,46,.06),0 4px 14px rgba(22,32,46,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--branco);color:var(--tinta);font-family:var(--corpo);font-size:16px;line-height:1.45}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--azul-titulo);outline-offset:2px}
+.pagina{max-width:1100px;margin:0 auto;padding:0 16px 56px}
+
+header.topo{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;padding:22px 0 16px;text-align:center}
+.topo img{height:88px;width:auto;display:block}
+.lema1{font-family:var(--cursiva);font-style:italic;color:var(--azul-titulo);font-size:1.1rem;margin:0}
+.lema2{font-style:italic;font-weight:700;color:var(--vermelho);font-size:.9rem;margin:2px 0 10px;letter-spacing:.01em}
+.dioc{font-weight:700;font-size:.8rem;letter-spacing:.12em;color:var(--cinza);margin:0}
+.topo h1{font-size:clamp(1.35rem,3.8vw,1.85rem);font-weight:700;margin:2px 0 0;line-height:1.15;text-wrap:balance;color:var(--azul-escuro)}
+.capela{margin:4px 0 0;font-size:.98rem;color:var(--cinza)}
+.regua{height:7px;border-top:2px solid var(--azul);border-bottom:2px solid #c0504d;margin:0 0 16px}
+.barra-topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+
+.botao{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #c3ccda;background:var(--branco);color:var(--azul-escuro);border-radius:8px;padding:9px 16px;cursor:pointer;font-weight:600;line-height:1.2;text-decoration:none;transition:background .15s,border-color .15s,box-shadow .15s;box-shadow:0 1px 1px rgba(22,32,46,.05)}
+.botao:hover{background:var(--azul-claro);border-color:var(--azul)}
+.botao:active{box-shadow:none;transform:translateY(1px)}
+.botao svg{width:16px;height:16px;flex:none}
+.botao.cheio{background:var(--azul);border-color:var(--azul);color:#fff}
+.botao.cheio:hover{background:var(--azul-escuro);border-color:var(--azul-escuro)}
+.botao.pequeno{padding:6px 12px;font-size:.9rem}
+.botao.perigo{color:var(--vermelho-escuro)}
+.botao.perigo:hover{background:#fdecec;border-color:var(--vermelho-escuro)}
+@media (prefers-reduced-motion:reduce){.botao{transition:none}}
+
+.aviso-adm{display:none;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;background:var(--azul-claro);border:1px solid var(--azul);border-radius:var(--raio);padding:10px 14px;margin-bottom:14px}
+body.adm .aviso-adm{display:flex}
+
+.filtros{border:1px solid var(--borda);border-radius:var(--raio);background:var(--fundo-suave);padding:14px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px}
+.campo{display:flex;flex-direction:column;gap:4px;min-width:0}
+.campo label{font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cinza)}
+.campo select{width:100%;appearance:none;-webkit-appearance:none;background:var(--branco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%232f5496' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 10px center;border:1px solid #c3ccda;border-radius:8px;padding:9px 30px 9px 10px;cursor:pointer}
+.campo select:hover{border-color:var(--azul)}
+.linha-extra{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;border-top:1px solid var(--borda);padding-top:12px}
+.linha-extra label{display:flex;gap:8px;align-items:center;cursor:pointer}
+.linha-extra input[type=checkbox]{width:18px;height:18px;accent-color:var(--azul)}
+.direita{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.contagem{font-variant-numeric:tabular-nums;color:var(--cinza)}
+
+.legenda{display:flex;flex-wrap:wrap;gap:8px 12px;margin:12px 0 0;font-size:.88rem;align-items:center;color:var(--cinza)}
+.marca{display:inline-block;padding:2px 9px;font-weight:700;font-size:.78rem;letter-spacing:.03em;text-transform:uppercase;border-radius:4px;color:var(--tinta)}
+.marca.cel{background:var(--amarelo);color:var(--vermelho)} .marca.ev{background:var(--verde)} .marca.sac{background:var(--ciano)} .marca.est{background:var(--laranja)}
+
+.bloco{margin-top:22px;border:1px solid var(--borda);border-radius:var(--raio);overflow:hidden;box-shadow:var(--sombra)}
+h2.mes{background:var(--azul);color:#fff;font-size:.95rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0;padding:9px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+h2.mes span{font-weight:400;letter-spacing:0;text-transform:none;opacity:.85;font-size:.88rem}
+.item{display:grid;grid-template-columns:minmax(0,1fr) 165px 185px 175px;border-top:1px solid var(--borda);border-left:5px solid var(--cor);background:var(--branco)}
+.item.cel{--cor:var(--amarelo)} .item.ev{--cor:var(--verde)} .item.sac{--cor:var(--ciano)}
+.lista .item:first-child{border-top:0}
+.lista .item + .item{border-top:3px solid var(--azul)}
+.bloco{border-bottom:3px solid var(--azul)}
+.item > div{padding:14px 16px;min-width:0}
+.item .prev,.item .real,.item .cats{border-left:1px solid var(--borda);background:var(--fundo-suave)}
+.cats ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;font-weight:600}
+.cats .vazia{color:var(--cinza)}
+.item.passou .titulo button,.item.passou .ref{color:var(--cinza)}
+.rotulo{display:block;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cinza);margin-bottom:2px}
+.data{font-weight:700;font-variant-numeric:tabular-nums;font-size:1.02rem}
+.data small{display:block;font-weight:400;color:var(--cinza);font-size:.88rem}
+.cabeca{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:6px}
+.quem{font-size:.86rem;color:var(--cinza);font-weight:600}
+.titulo{margin:0 0 6px;font-size:1.12rem;line-height:1.25;font-weight:700}
+.titulo button{all:unset;cursor:pointer;color:var(--tinta)}
+.titulo button:hover{color:var(--azul);text-decoration:underline}
+.titulo button:focus-visible{outline:3px solid var(--azul-titulo);outline-offset:2px}
+.ref{margin:0;font-size:.95rem}
+.obs{margin:10px 0 0;font-size:.93rem;background:var(--laranja-claro);border:1px solid #f3c79b;border-left:4px solid var(--laranja);border-radius:6px;padding:8px 12px;display:flex;gap:9px;align-items:flex-start;color:var(--tinta)}
+.obs svg{width:17px;height:17px;flex:none;margin-top:2px;color:var(--laranja-escuro)}
+.obs b{color:var(--laranja-escuro);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;display:block}
+.pe{margin-top:12px}
+.est{display:inline-block;margin-top:5px;background:var(--laranja);font-size:.74rem;font-weight:700;letter-spacing:.03em;padding:2px 8px;border-radius:4px}
+.real .data.vazia{font-weight:400;color:var(--cinza)}
+.feita{display:inline-block;margin-top:5px;background:var(--verde);font-size:.74rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 8px;border-radius:4px}
+.editar{display:none;margin-top:10px;gap:6px;flex-direction:column;align-items:stretch}
+body.adm .editar{display:flex}
+.editar input[type=date]{background:var(--branco);border:1px solid #c3ccda;border-radius:8px;padding:7px 8px;width:100%}
+.vazio{border:1px dashed #c3ccda;border-radius:var(--raio);padding:36px 16px;text-align:center;margin-top:22px;color:var(--cinza)}
+footer{margin-top:40px;font-size:.86rem;color:var(--cinza);text-align:center}
+footer::before{content:"";display:block;height:7px;border-top:2px solid var(--azul);border-bottom:2px solid #c0504d;margin-bottom:12px}
+
+.fundo-modal{position:fixed;inset:0;background:rgba(22,32,46,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:10}
+.fundo-modal.aberto{display:flex}
+.modal{background:var(--branco);border-radius:14px;width:100%;max-width:400px;max-height:100%;overflow:auto;box-shadow:0 20px 50px rgba(22,32,46,.35)}
+.modal.largo{max-width:640px}
+.modal-topo{background:var(--azul);color:#fff;font-weight:700;letter-spacing:.06em;font-size:.86rem;text-transform:uppercase;padding:10px 12px 10px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:0}
+.fechar{all:unset;cursor:pointer;width:32px;height:32px;border-radius:8px;display:grid;place-items:center}
+.fechar:hover{background:rgba(255,255,255,.18)}
+.fechar svg{width:18px;height:18px}
+.fechar:focus-visible{outline:2px solid #fff}
+.modal-corpo{padding:18px 20px 20px}
+.modal h3{margin:8px 0 4px;font-size:1.35rem;line-height:1.2;color:var(--tinta);text-wrap:balance}
+.modal h4{margin:16px 0 4px;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--cinza)}
+.modal p{margin:0 0 6px}
+.quadro{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--borda);border-radius:8px;margin-top:12px;background:var(--fundo-suave)}
+.quadro > div{padding:10px 14px}
+.quadro > div + div{border-left:1px solid var(--borda)}
+.modal .obs{margin-top:14px}
+.nota{font-size:.84rem;color:var(--cinza);margin-top:16px;border-top:1px solid var(--borda);padding-top:10px}
+.modal .campo{margin-bottom:12px}
+.modal input[type=text],.modal input[type=password],.modal textarea{background:var(--branco);border:1px solid #c3ccda;border-radius:8px;padding:10px;width:100%}
+.modal textarea{min-height:130px;resize:vertical}
+.erro{color:var(--vermelho-escuro);font-weight:700;min-height:1.4em;margin:0 0 6px;font-size:.92rem}
+.acoes{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.so-adm{display:none} body.adm .so-adm{display:block}
+.acoes-adm{display:flex;gap:8px;flex-wrap:wrap}
+.cat-lista{list-style:none;margin:0 0 6px;padding:0;display:flex;flex-direction:column;gap:8px}
+.cat-lista li{border:1px solid var(--borda);border-radius:8px;padding:10px 12px;display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.cat-lista .nome{font-weight:700}
+.cat-lista .turmas{font-size:.9rem;color:var(--cinza)}
+fieldset.turmas{border:1px solid var(--borda);border-radius:8px;margin:0 0 12px;padding:8px 12px 12px}
+fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cinza);padding:0 4px}
+.grade{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+.grade label{display:flex;gap:8px;align-items:center;cursor:pointer;font-size:.95rem;padding:3px 0}
+.grade input{width:18px;height:18px;accent-color:var(--azul);flex:none}
+@media (max-width:480px){.grade{grid-template-columns:1fr}}
+
+@media (max-width:860px){
+  .filtros{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .item{grid-template-columns:1fr 1fr}
+  .item .miolo,.item .cats{grid-column:1/-1}
+  .item .prev,.item .real,.item .cats{border-top:1px solid var(--borda)}
+  .item .cats{border-left:0}
+  .cats ul{flex-direction:row;flex-wrap:wrap;gap:2px 14px}
+  .item .prev{border-left:0}
+}
+@media (max-width:480px){
+  header.topo{gap:8px;padding-top:14px}
+  .topo img{height:54px}
+  .lema1{font-size:.92rem} .lema2{font-size:.72rem}
+  .filtros{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .barra-topo .botao{width:100%}
+  .item > div{padding:12px}
+  .pe .botao{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header class="topo">
+    <img src="/*__CAT__*/" alt="Catequese, Diocese de Guarulhos">
+    <div>
+      <p class="lema1">Iniciação à vida Cristã:</p>
+      <p class="lema2">“O CAMINHO PARA FORMAR DISCÍPULOS”</p>
+      <p class="dioc">DIOCESE DE GUARULHOS</p>
+      <h1>Calendário Catequese</h1>
+      <p class="capela">Capela São Judas Tadeu, Paróquia Sagrada Família</p>
+    </div>
+    <img src="/*__DIO__*/" alt="Brasão da Diocese de Guarulhos">
+  </header>
+  <div class="regua"></div>
+  <div class="barra-topo"><span class="contagem" id="contagem"></span><button class="botao" id="btnAdm" type="button"></button></div>
+
+  <div class="aviso-adm">
+    <span><b>Modo coordenador.</b> Preencha a data de realização em cada linha; ela é salva na hora. Para editar a descrição, abra os detalhes. Em Catequistas você cadastra quem cuida de cada etapa.</span>
+    <span class="acoes-adm"><button class="botao pequeno cheio" id="btnCats" type="button"></button><button class="botao pequeno" id="btnSair" type="button">Sair do modo coordenador</button></span>
+  </div>
+
+  <section class="filtros" aria-label="Filtros">
+    <div class="campo"><label for="fCiclo">Calendário</label><select id="fCiclo"></select></div>
+    <div class="campo"><label for="fAno">Ano</label><select id="fAno"></select></div>
+    <div class="campo"><label for="fMes">Mês</label><select id="fMes"></select></div>
+    <div class="campo"><label for="fPub">Público</label><select id="fPub"></select></div>
+    <div class="campo"><label for="fEtapa">Etapa</label><select id="fEtapa"></select></div>
+    <div class="campo"><label for="fCat">Tipo</label><select id="fCat"></select></div>
+    <div class="campo"><label for="fQuem">Catequista</label><select id="fQuem"></select></div>
+    <div class="linha-extra">
+      <label for="fFuturas"><input type="checkbox" id="fFuturas"> Mostrar só as que ainda vão acontecer</label>
+      <button class="botao pequeno" id="btnLimpar" type="button"></button>
+    </div>
+  </section>
+  <p class="legenda"><span class="marca cel">Celebração</span><span class="marca ev">Retiro ou evento</span><span class="marca sac">Sacramento</span><span class="marca est">(ESTIMADO)</span><span>data projetada, sem calendário oficial</span></p>
+
+  <main id="resultado"></main>
+
+  <footer>
+    Datas de previsão tiradas dos calendários da Diocese de Guarulhos. As marcadas com (ESTIMADO) ainda não têm calendário oficial: foram projetadas a partir do último calendário publicado para cada público.
+  </footer>
+</div>
+
+<div class="fundo-modal" id="modalLogin" role="dialog" aria-modal="true" aria-labelledby="loginTitulo">
+  <form class="modal" id="formLogin">
+    <div class="modal-topo"><span id="loginTitulo">Área do coordenador</span><button class="fechar" type="button" data-fecha aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="modal-corpo">
+      <p>Entre para preencher as datas de realização.</p>
+      <div class="campo"><label for="lUser">Usuário</label><input type="text" id="lUser" autocomplete="username"></div>
+      <div class="campo"><label for="lPass">Senha</label><input type="password" id="lPass" autocomplete="current-password"></div>
+      <p class="erro" id="lErro" role="alert"></p>
+      <div class="acoes"><button class="botao" type="button" data-fecha>Cancelar</button><button class="botao cheio" type="submit">Entrar</button></div>
+    </div>
+  </form>
+</div>
+
+<div class="fundo-modal" id="modalCats" role="dialog" aria-modal="true" aria-labelledby="catsTitulo">
+  <div class="modal largo">
+    <div class="modal-topo"><span id="catsTitulo">Catequistas</span><button class="fechar" type="button" data-fecha aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="modal-corpo" id="catsCorpo"></div>
+  </div>
+</div>
+
+<div class="fundo-modal" id="modalDet" role="dialog" aria-modal="true" aria-labelledby="detTitulo">
+  <div class="modal largo">
+    <div class="modal-topo"><span id="detFaixa"></span><button class="fechar" type="button" data-fecha aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="modal-corpo" id="detCorpo"></div>
+  </div>
+</div>
+
+<script>
+/*__DADOS__*/
+</script>
+<script>
+(function(){
+"use strict";
+
+/* ====== ARMAZENAMENTO ======
+   Versao de teste: datas de realizacao e descricoes editadas ficam no navegador de quem preencheu.
+   Na hospedagem definitiva, troque apenas este bloco por chamadas ao banco de dados e por login
+   de verdade. O resto do app nao muda. */
+var CHAVE = "catequese-celebracoes-v2";
+var LOGIN_TESTE = {usuario:"coordenador", senha:"sjt2026"};
+var mem = {real:{}, desc:{}, cat:[]};
+var Armazem = {
+  carregar: function(){
+    try{
+      var v = JSON.parse(localStorage.getItem(CHAVE) || "null");
+      if(v && v.real){ mem = {real:v.real, desc:v.desc || {}, cat:v.cat || []}; }
+      else { var a = JSON.parse(localStorage.getItem("catequese-realizacao-v1") || "null"); if(a) mem.real = a; }
+    }catch(e){}
+    return mem;
+  },
+  grava: function(){ try{ localStorage.setItem(CHAVE, JSON.stringify(mem)); }catch(e){} },
+  salvarData: function(id, d){ if(d) mem.real[id] = d; else delete mem.real[id]; this.grava(); },
+  salvarDesc: function(id, t){ if(t) mem.desc[id] = t; else delete mem.desc[id]; this.grava(); },
+  salvarCats: function(lista){ mem.cat = lista; this.grava(); },
+  entrar: function(u, s){ return u.trim().toLowerCase() === LOGIN_TESTE.usuario && s === LOGIN_TESTE.senha; }
+};
+
+var DADOS = montaBase();
+Armazem.carregar();
+var MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+var DIAS = ["dom.","seg.","ter.","qua.","qui.","sex.","sáb."];
+var PUB = {crianca:"Crianças", jovem:"Jovens (Crisma)", adulto:"Adultos"};
+var CAT = {cel:"Celebração", sac:"Sacramento", ev:"Retiro ou evento"};
+var hoje = (function(){ var d = new Date(); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); })();
+
+function $(id){ return document.getElementById(id); }
+function ic(p){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'; }
+var IC = {
+  cadeado: ic('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
+  sair: ic('<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/>'),
+  info: ic('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/>'),
+  limpar: ic('<path d="M4 5h16l-6 7v6l-4 2v-8z"/>'),
+  lixo: ic('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
+  alerta: ic('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/>'),
+  salvar: ic('<path d="M5 12l5 5 9-10"/>'),
+  pessoas: ic('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/>'),
+  lapis: ic('<path d="M4 20l1-4L16 5l3 3L8 19z"/>'),
+  voltar: ic('<path d="M4 9h10a5 5 0 0 1 0 10H9M4 9l4-4M4 9l4 4"/>')
+};
+function blocoObs(r){ return r.obs ? '<div class="obs">'+IC.alerta+'<div><b>Observação'+(r.est ? " do calendário "+r.fonte : "")+'</b>'+esc(r.obs)+'</div></div>' : ''; }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+function partes(d){ var p = d.split("-"); return {a:+p[0], m:+p[1], d:+p[2]}; }
+function dia(d){ var p = partes(d); return DIAS[new Date(Date.UTC(p.a,p.m-1,p.d)).getUTCDay()]; }
+function curta(d){ var p = d.split("-"); return p[2]+"/"+p[1]; }
+function longa(d){ var p = d.split("-"); return p[2]+"/"+p[1]+"/"+p[0]; }
+function intervalo(i, f){ if(!f || f === i) return longa(i); return (i.slice(0,4) === f.slice(0,4) ? curta(i) : longa(i)) + " a " + longa(f); }
+function chave(r){ return r.i || r.s || r.f; }
+function fim(r){ return r.f || r.i || r.s; }
+function porId(id){ for(var n = 0; n < DADOS.length; n++) if(DADOS[n].id === id) return DADOS[n]; return null; }
+var NOME_CICLO = {"25/26":"2025/2026", "26/27":"2026/2027", "27/28":"2027/2028"};
+function ciclo(r){ return NOME_CICLO[r.ciclo]; }
+function descricao(r){ return mem.desc[r.id] || DESC[r.id.split("~")[0]] || ""; }
+
+/* Uma turma e calendario + publico + etapa. Os adultos formam um grupo so, que passa pelos quatro tempos. */
+var TURMAS = [["crianca","1ª etapa"],["crianca","2ª etapa"],["crianca","3ª etapa"],["crianca","4ª etapa"],["jovem","1ª etapa"],["jovem","2ª etapa"],["jovem","3ª etapa"],["adulto",""]];
+var CICLOS = [["25/26","2025/2026"],["26/27","2026/2027"],["27/28","2027/2028"]];
+function rotuloEtapa(p, e){ return p === "adulto" ? "Etapa Adulto" : e.replace("etapa","Etapa")+(p === "crianca" ? " Crianças" : " Jovens"); }
+function chaveTurma(c, p, e){ return c+"|"+p+"|"+(p === "adulto" ? "" : e); }
+function turmaDe(r){ return chaveTurma(r.ciclo, r.pub, r.et); }
+function nomeTurma(k){ var p = k.split("|"); return rotuloEtapa(p[1], p[2])+" ("+p[0]+")"; }
+function catsDe(r){ var k = turmaDe(r); return mem.cat.filter(function(c){ return c.turmas.indexOf(k) >= 0; }).sort(function(a,b){ return a.nome.localeCompare(b.nome, "pt-BR"); }); }
+function blocoCats(r){
+  var l = catsDe(r), h = '<span class="rotulo">Catequistas</span>';
+  return h + (l.length ? '<ul>'+l.map(function(c){ return '<li>'+esc(c.nome)+'</li>'; }).join("")+'</ul>' : '<span class="data vazia">A definir</span>');
+}
+
+function textoPrevisao(r){
+  if(r.ate) return {t:"até "+longa(r.f), s:dia(r.f)};
+  if(r.de) return {t:"a partir de "+longa(r.i), s:dia(r.i)};
+  if(r.i) return {t:intervalo(r.i, r.f), s:(r.f && r.f !== r.i) ? dia(r.i)+" a "+dia(r.f) : dia(r.i)};
+  if(r.sm){ var p = partes(r.s); return {t:MESES[p.m-1]+" de "+p.a, s:"sem dia definido"}; }
+  return {t:"Sem data no calendário", s:"", vazio:true};
+}
+function textoRef(r){
+  if(!r.enc) return "não indicado no calendário.";
+  var t = esc(r.enc);
+  if(r.rd) t += " (previsto para "+intervalo(r.rd, r.rf)+(r.est ? ", ESTIMADO" : "")+")";
+  return t+"."+(r.no ? " "+esc(r.no) : "");
+}
+function blocoPrev(r){
+  var pv = textoPrevisao(r);
+  return '<span class="rotulo">Previsão</span><span class="data">'+pv.t+(pv.s ? '<small>'+pv.s+'</small>' : '')+'</span>'+(r.est && !pv.vazio ? '<span class="est">(ESTIMADO)</span>' : '');
+}
+function blocoReal(r){
+  var real = mem.real[r.id], h = '<span class="rotulo">Realização</span>';
+  if(real) h += '<span class="data">'+longa(real)+'<small>'+dia(real)+'</small></span>'+(real < hoje ? '<span class="feita">Realizada</span>' : '');
+  else h += '<span class="data vazia">A definir</span>';
+  return h;
+}
+
+function opcoes(sel, lista, todos){
+  var atual = sel.value;
+  sel.innerHTML = '<option value="">'+todos+'</option>' + lista.map(function(o){ return '<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>'; }).join("");
+  if(lista.some(function(o){ return String(o[0]) === atual; })) sel.value = atual;
+}
+function unicos(arr){ return arr.filter(function(v,i){ return arr.indexOf(v) === i; }); }
+function montaFiltros(){
+  opcoes($("fCiclo"), CICLOS, "Todos");
+  opcoes($("fAno"), unicos(DADOS.map(function(r){ return chave(r).slice(0,4); })).sort().map(function(a){ return [a,a]; }), "Todos");
+  opcoes($("fMes"), MESES.map(function(m,i){ return [i+1, m.charAt(0).toUpperCase()+m.slice(1)]; }), "Todos");
+  opcoes($("fPub"), Object.keys(PUB).map(function(k){ return [k, PUB[k]]; }), "Todos");
+  opcoes($("fCat"), Object.keys(CAT).map(function(k){ return [k, CAT[k]]; }), "Todos");
+  montaEtapas(); montaQuem();
+}
+function montaQuem(){ opcoes($("fQuem"), mem.cat.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome, "pt-BR"); }).map(function(c){ return [c.id, c.nome]; }), "Todos"); }
+function montaEtapas(){
+  var pub = $("fPub").value;
+  opcoes($("fEtapa"), TURMAS.filter(function(t){ return !pub || t[0] === pub; }).map(function(t){ return [t[0]+"|"+t[1], rotuloEtapa(t[0], t[1])]; }), "Todas");
+}
+function filtra(){
+  var c = $("fCiclo").value, a = $("fAno").value, m = $("fMes").value, p = $("fPub").value, e = $("fEtapa").value, t = $("fCat").value, q = $("fQuem").value, fut = $("fFuturas").checked;
+  return DADOS.filter(function(r){
+    if(c && r.ciclo !== c) return false;
+    if(p && r.pub !== p) return false;
+    if(e){ var pe = e.split("|"); if(r.pub !== pe[0] || (pe[0] !== "adulto" && r.et !== pe[1])) return false; }
+    if(t && r.cat !== t) return false;
+    if(q && !catsDe(r).some(function(c){ return c.id === q; })) return false;
+    var k = chave(r), f = fim(r);
+    if(a && k.slice(0,4) !== a && f.slice(0,4) !== a) return false;
+    if(m && +k.slice(5,7) !== +m && +f.slice(5,7) !== +m) return false;
+    if(fut && (mem.real[r.id] || f) < hoje) return false;
+    return true;
+  }).sort(function(x,y){ var kx = chave(x), ky = chave(y); return kx < ky ? -1 : kx > ky ? 1 : x.id < y.id ? -1 : 1; });
+}
+
+function linha(r){
+  var real = mem.real[r.id], passou = fim(r) < hoje && (!real || real < hoje), id = esc(r.id);
+  var h = '<article class="item '+r.cat+(passou ? " passou" : "")+'"><div class="miolo">'
+    + '<div class="cabeca"><span class="marca '+r.cat+'">'+CAT[r.cat]+'</span><span class="quem">'+PUB[r.pub]+' · '+esc(r.et)+' · '+ciclo(r)+'</span></div>'
+    + '<h3 class="titulo"><button type="button" data-det="'+id+'">'+esc(r.t)+'</button></h3>'
+    + '<p class="ref"><b>Encontro de referência:</b> '+textoRef(r)+'</p>'
+    + blocoObs(r)
+    + '<div class="pe"><button class="botao pequeno mais" type="button" data-det="'+id+'">'+IC.info+'Ver detalhes</button></div></div>'
+    + '<div class="prev">'+blocoPrev(r)+'</div><div class="real">'+blocoReal(r)
+    + '<div class="editar"><input type="date" id="d-'+id+'" data-id="'+id+'" value="'+(real || "")+'" aria-label="Data de realização de '+esc(r.t)+'">'
+    + (real ? '<button class="botao pequeno perigo" type="button" data-limpar="'+id+'">'+IC.lixo+'Apagar data</button>' : '')+'</div></div>'
+    + '<div class="cats">'+blocoCats(r)+'</div></article>';
+  return h;
+}
+function desenha(){
+  var lista = filtra(), h = "", mesAtual = "", grupo = [];
+  function fecha(){
+    if(!grupo.length) return;
+    var p = partes(mesAtual+"-01");
+    h += '<section class="bloco"><h2 class="mes">'+MESES[p.m-1]+' de '+p.a+'<span>'+grupo.length+(grupo.length === 1 ? " item" : " itens")+'</span></h2><div class="lista">'+grupo.join("")+'</div></section>';
+    grupo = [];
+  }
+  lista.forEach(function(r){ var mk = chave(r).slice(0,7); if(mk !== mesAtual){ fecha(); mesAtual = mk; } grupo.push(linha(r)); });
+  fecha();
+  if(!lista.length) h = '<div class="vazio">Nenhuma celebração com esses filtros. Use o botão Limpar filtros para ver tudo.</div>';
+  $("resultado").innerHTML = h;
+  var comData = lista.filter(function(r){ return mem.real[r.id]; }).length;
+  $("contagem").textContent = lista.length+(lista.length === 1 ? " item" : " itens")+", "+comData+" com data de realização";
+}
+
+/* ====== CAIXA DE DETALHES ====== */
+var aberto = null, focoAntes = null;
+function abreDet(id){
+  var r = porId(id); if(!r) return;
+  aberto = id; focoAntes = document.activeElement;
+  var d = descricao(r);
+  $("detFaixa").textContent = "Detalhes";
+  var h = '<div class="cabeca"><span class="marca '+r.cat+'">'+CAT[r.cat]+'</span><span class="quem">'+PUB[r.pub]+' · '+esc(r.et)+' · calendário '+ciclo(r)+'</span></div>'
+    + '<h3 id="detTitulo">'+esc(r.t)+'</h3>'
+    + '<div class="quadro"><div>'+blocoPrev(r)+'</div><div>'+blocoReal(r)+'</div></div>'
+    + '<h4>Catequistas</h4><p>'+(catsDe(r).length ? catsDe(r).map(function(c){ return esc(c.nome); }).join(", ") : "A definir")+'</p>'
+    + '<h4>Do que se trata</h4><p id="detDesc">'+(d ? esc(d) : "Sem descrição cadastrada.")+'</p>'
+    + '<h4>Até onde a turma deve ter chegado</h4><p>'+textoRef(r)+'</p>'
+    + blocoObs(r)
+    + '<div class="so-adm"><h4><label for="detTexto">Editar a descrição</label></h4><textarea id="detTexto">'+esc(d)+'</textarea>'
+    + '<div class="acoes" style="margin-top:8px"><button class="botao" type="button" id="detPadrao">'+IC.voltar+'Voltar ao texto original</button><button class="botao cheio" type="button" id="detSalvar">'+IC.salvar+'Salvar descrição</button></div></div>'
+    + '<p class="nota">A descrição é um resumo preparado para este app. O roteiro oficial de cada celebração está no livro da etapa.</p>';
+  $("detCorpo").innerHTML = h;
+  $("modalDet").classList.add("aberto");
+  $("modalDet").querySelector(".fechar").focus();
+}
+function fechaTudo(){
+  $("modalDet").classList.remove("aberto"); $("modalCats").classList.remove("aberto"); $("modalLogin").classList.remove("aberto"); $("formLogin").reset(); aberto = null;
+  if(focoAntes && focoAntes.focus){ try{ focoAntes.focus(); }catch(e){} } focoAntes = null;
+}
+$("detCorpo").addEventListener("click", function(ev){
+  if(!aberto || !document.body.classList.contains("adm")) return;
+  var r = porId(aberto);
+  var bt = ev.target.closest("button"); if(!bt) return;
+  if(bt.id === "detSalvar"){
+    var t = $("detTexto").value.trim(), orig = DESC[r.id.split("~")[0]] || "";
+    Armazem.salvarDesc(r.id, t === orig ? "" : t); abreDet(r.id);
+  }
+  if(bt.id === "detPadrao"){ Armazem.salvarDesc(r.id, ""); abreDet(r.id); }
+});
+
+["fCiclo","fAno","fMes","fEtapa","fCat","fQuem","fFuturas"].forEach(function(id){ $(id).addEventListener("change", desenha); });
+$("fPub").addEventListener("change", function(){ montaEtapas(); desenha(); });
+$("btnLimpar").addEventListener("click", function(){
+  ["fCiclo","fAno","fMes","fPub","fEtapa","fCat","fQuem"].forEach(function(id){ $(id).value = ""; });
+  $("fFuturas").checked = false; montaEtapas(); desenha();
+});
+$("resultado").addEventListener("change", function(ev){
+  var el = ev.target;
+  if(el.matches && el.matches("input[type=date][data-id]") && document.body.classList.contains("adm")){ Armazem.salvarData(el.getAttribute("data-id"), el.value); desenha(); }
+});
+$("resultado").addEventListener("click", function(ev){
+  var alvo = ev.target.closest ? ev.target.closest("[data-det],[data-limpar]") : null; if(!alvo) return;
+  if(alvo.hasAttribute("data-det")) abreDet(alvo.getAttribute("data-det"));
+  else if(document.body.classList.contains("adm")){ Armazem.salvarData(alvo.getAttribute("data-limpar"), ""); desenha(); }
+});
+
+document.addEventListener("click", function(ev){
+  if(ev.target.closest && ev.target.closest("[data-fecha]")) fechaTudo();
+  if(ev.target.classList && ev.target.classList.contains("fundo-modal")) fechaTudo();
+});
+document.addEventListener("keydown", function(ev){ if(ev.key === "Escape") fechaTudo(); });
+$("btnAdm").addEventListener("click", function(){
+  if(document.body.classList.contains("adm")) sair();
+  else { focoAntes = $("btnAdm"); $("lErro").textContent = ""; $("modalLogin").classList.add("aberto"); $("lUser").focus(); }
+});
+$("formLogin").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  if(Armazem.entrar($("lUser").value, $("lPass").value)){ document.body.classList.add("adm"); rotulos(); fechaTudo(); }
+  else { $("lErro").textContent = "Usuário ou senha incorretos."; }
+});
+function sair(){ document.body.classList.remove("adm"); rotulos(); }
+function rotulos(){
+  var adm = document.body.classList.contains("adm");
+  $("btnAdm").innerHTML = adm ? IC.sair+"Sair do modo coordenador" : IC.cadeado+"Área do coordenador";
+  $("btnAdm").className = adm ? "botao" : "botao cheio";
+  $("btnLimpar").innerHTML = IC.limpar+"Limpar filtros";
+  $("btnCats").innerHTML = IC.pessoas+"Catequistas";
+}
+rotulos();
+$("btnSair").addEventListener("click", sair);
+
+/* ====== CADASTRO DE CATEQUISTAS ====== */
+var editando = null, removendo = null;
+function desenhaCats(msg){
+  var lista = mem.cat.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome, "pt-BR"); });
+  var ed = editando ? mem.cat.filter(function(c){ return c.id === editando; })[0] : null;
+  var h = '<h4 style="margin-top:0">Cadastrados</h4>';
+  if(!lista.length) h += '<p>Nenhum catequista cadastrado ainda.</p>';
+  else h += '<ul class="cat-lista">'+lista.map(function(c){
+    return '<li><div><div class="nome">'+esc(c.nome)+'</div><div class="turmas">'+(c.turmas.length ? c.turmas.map(nomeTurma).map(esc).join(", ") : "Sem etapa marcada")+'</div></div>'
+      + '<span class="acoes">'+(removendo === c.id
+        ? '<button class="botao pequeno perigo" type="button" data-rm-ok="'+c.id+'">'+IC.lixo+'Confirmar remoção</button><button class="botao pequeno" type="button" data-rm-nao>Cancelar</button>'
+        : '<button class="botao pequeno" type="button" data-ed="'+c.id+'">'+IC.lapis+'Editar</button><button class="botao pequeno perigo" type="button" data-rm="'+c.id+'">'+IC.lixo+'Remover</button>')+'</span></li>';
+  }).join("")+'</ul>';
+  h += '<h4>'+(ed ? "Editar catequista" : "Novo catequista")+'</h4><form id="formCat">'
+    + '<div class="campo"><label for="cNome">Nome</label><input type="text" id="cNome" maxlength="60" value="'+(ed ? esc(ed.nome) : "")+'"></div>';
+  CICLOS.forEach(function(ci){
+    h += '<fieldset class="turmas"><legend>Etapas no calendário '+ci[1]+'</legend><div class="grade">'
+      + TURMAS.map(function(t, n){ var k = chaveTurma(ci[0], t[0], t[1]);
+          return '<label for="ct-'+ci[0].replace("/","")+'-'+n+'"><input type="checkbox" id="ct-'+ci[0].replace("/","")+'-'+n+'" value="'+esc(k)+'"'+(ed && ed.turmas.indexOf(k) >= 0 ? " checked" : "")+'>'+rotuloEtapa(t[0], t[1])+'</label>'; }).join("")
+      + '</div></fieldset>';
+  });
+  h += '<p class="erro" id="cErro" role="alert">'+(msg || "")+'</p><div class="acoes">'
+    + (ed ? '<button class="botao" type="button" data-ed-nao>Cancelar edição</button>' : '')
+    + '<button class="botao cheio" type="submit">'+IC.salvar+(ed ? "Salvar alterações" : "Cadastrar")+'</button></div></form>';
+  $("catsCorpo").innerHTML = h;
+}
+$("btnCats").addEventListener("click", function(){ focoAntes = $("btnCats"); editando = null; removendo = null; desenhaCats(); $("modalCats").classList.add("aberto"); $("modalCats").querySelector(".fechar").focus(); });
+$("catsCorpo").addEventListener("click", function(ev){
+  var b = ev.target.closest("button"); if(!b || !document.body.classList.contains("adm")) return;
+  if(b.hasAttribute("data-ed")){ editando = b.getAttribute("data-ed"); removendo = null; desenhaCats(); $("cNome").focus(); }
+  else if(b.hasAttribute("data-ed-nao")){ editando = null; desenhaCats(); }
+  else if(b.hasAttribute("data-rm")){ removendo = b.getAttribute("data-rm"); desenhaCats(); }
+  else if(b.hasAttribute("data-rm-nao")){ removendo = null; desenhaCats(); }
+  else if(b.hasAttribute("data-rm-ok")){ var id = b.getAttribute("data-rm-ok"); Armazem.salvarCats(mem.cat.filter(function(c){ return c.id !== id; })); if(editando === id) editando = null; removendo = null; desenhaCats(); montaQuem(); desenha(); }
+});
+$("catsCorpo").addEventListener("submit", function(ev){
+  ev.preventDefault(); if(!document.body.classList.contains("adm")) return;
+  var nome = $("cNome").value.trim().replace(/\s+/g, " ");
+  if(!nome){ desenhaCats("Digite o nome do catequista."); $("cNome").focus(); return; }
+  var turmas = Array.prototype.map.call($("catsCorpo").querySelectorAll(".grade input:checked"), function(i){ return i.value; });
+  var lista = mem.cat.slice();
+  if(editando){ lista = lista.map(function(c){ return c.id === editando ? {id:c.id, nome:nome, turmas:turmas} : c; }); }
+  else lista.push({id:"c"+Date.now().toString(36), nome:nome, turmas:turmas});
+  Armazem.salvarCats(lista); editando = null; removendo = null; desenhaCats(); montaQuem(); desenha();
+});
+
+montaFiltros();
+desenha();
+})();
+</script>
+</body>
+</html>
