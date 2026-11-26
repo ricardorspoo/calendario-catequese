@@ -120,11 +120,17 @@ footer::before{content:"";display:block;height:7px;border-top:2px solid var(--az
 .modal .obs{margin-top:14px}
 .nota{font-size:.84rem;color:var(--cinza);margin-top:16px;border-top:1px solid var(--borda);padding-top:10px}
 .modal .campo{margin-bottom:12px}
-.modal input[type=text],.modal input[type=password],.modal textarea{background:var(--branco);border:1px solid #c3ccda;border-radius:8px;padding:10px;width:100%}
+.modal input[type=text],.modal input[type=email],.modal input[type=password],.modal textarea{background:var(--branco);border:1px solid #c3ccda;border-radius:8px;padding:10px;width:100%}
 .modal textarea{min-height:130px;resize:vertical}
 .erro{color:var(--vermelho-escuro);font-weight:700;min-height:1.4em;margin:0 0 6px;font-size:.92rem}
+.aviso-adm .erro{display:block;min-height:0;margin:4px 0 0}
 .acoes{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .so-adm{display:none} body.adm .so-adm{display:block}
+.so-dono{display:none} body.dono .so-dono{display:inline-flex}
+.link{all:unset;cursor:pointer;color:var(--azul);text-decoration:underline;font-size:.92rem}
+.link:focus-visible{outline:3px solid var(--azul-titulo);outline-offset:2px}
+.ok{color:#17603f;font-weight:600;margin:0 0 6px;font-size:.92rem}
+.ok:empty{display:none}
 .acoes-adm{display:flex;gap:8px;flex-wrap:wrap}
 .cat-lista{list-style:none;margin:0 0 6px;padding:0;display:flex;flex-direction:column;gap:8px}
 .cat-lista li{border:1px solid var(--borda);border-radius:8px;padding:10px 12px;display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
@@ -174,8 +180,8 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
   <div class="barra-topo"><span class="contagem" id="contagem"></span><button class="botao" id="btnAdm" type="button"></button></div>
 
   <div class="aviso-adm">
-    <span><b>Modo coordenador.</b> Preencha a data de realização em cada linha; ela é salva na hora. Para editar a descrição, abra os detalhes. Em Catequistas você cadastra quem cuida de cada etapa.</span>
-    <span class="acoes-adm"><button class="botao pequeno cheio" id="btnCats" type="button"></button><button class="botao pequeno" id="btnSair" type="button">Sair do modo coordenador</button></span>
+    <span><b>Modo coordenador.</b> Preencha a data de realização em cada linha; ela é salva na hora. Para editar a descrição, abra os detalhes. Em Catequistas você cadastra quem cuida de cada etapa. <span class="erro" id="avisoSalvar" role="alert"></span></span>
+    <span class="acoes-adm"><button class="botao pequeno cheio" id="btnCats" type="button"></button><button class="botao pequeno so-dono" id="btnUsers" type="button"></button><button class="botao pequeno" id="btnSair" type="button">Sair do modo coordenador</button></span>
   </div>
 
   <section class="filtros" aria-label="Filtros">
@@ -205,10 +211,12 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
     <div class="modal-topo"><span id="loginTitulo">Área do coordenador</span><button class="fechar" type="button" data-fecha aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <div class="modal-corpo">
       <p>Entre para preencher as datas de realização.</p>
-      <div class="campo"><label for="lUser">Usuário</label><input type="text" id="lUser" autocomplete="username"></div>
+      <div class="campo"><label for="lUser">E-mail</label><input type="email" id="lUser" autocomplete="username"></div>
       <div class="campo"><label for="lPass">Senha</label><input type="password" id="lPass" autocomplete="current-password"></div>
       <p class="erro" id="lErro" role="alert"></p>
-      <div class="acoes"><button class="botao" type="button" data-fecha>Cancelar</button><button class="botao cheio" type="submit">Entrar</button></div>
+      <p class="ok" id="lOk" role="status"></p>
+      <p><button class="link" type="button" id="btnEsqueci">Esqueci minha senha</button></p>
+      <div class="acoes"><button class="botao" type="button" data-fecha>Cancelar</button><button class="botao cheio" type="submit" id="btnEntrar">Entrar</button></div>
     </div>
   </form>
 </div>
@@ -220,6 +228,13 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
   </div>
 </div>
 
+<div class="fundo-modal" id="modalUsers" role="dialog" aria-modal="true" aria-labelledby="usersTitulo">
+  <div class="modal largo">
+    <div class="modal-topo"><span id="usersTitulo">Usuários com acesso</span><button class="fechar" type="button" data-fecha aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="modal-corpo" id="usersCorpo"></div>
+  </div>
+</div>
+
 <div class="fundo-modal" id="modalDet" role="dialog" aria-modal="true" aria-labelledby="detTitulo">
   <div class="modal largo">
     <div class="modal-topo"><span id="detFaixa"></span><button class="fechar" type="button" data-fecha aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
@@ -227,6 +242,9 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 /*__DADOS__*/
 </script>
@@ -234,31 +252,95 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
 (function(){
 "use strict";
 
-/* ====== ARMAZENAMENTO ======
-   Versao de teste: datas de realizacao e descricoes editadas ficam no navegador de quem preencheu.
-   Na hospedagem definitiva, troque apenas este bloco por chamadas ao banco de dados e por login
-   de verdade. O resto do app nao muda. */
-var CHAVE = "catequese-celebracoes-v2";
-var LOGIN_TESTE = {usuario:"coordenador", senha:"sjt2026"};
-var mem = {real:{}, desc:{}, cat:[]};
-var Armazem = {
-  carregar: function(){
-    try{
-      var v = JSON.parse(localStorage.getItem(CHAVE) || "null");
-      if(v && v.real){ mem = {real:v.real, desc:v.desc || {}, cat:v.cat || []}; }
-      else { var a = JSON.parse(localStorage.getItem("catequese-realizacao-v1") || "null"); if(a) mem.real = a; }
-    }catch(e){}
-    return mem;
-  },
-  grava: function(){ try{ localStorage.setItem(CHAVE, JSON.stringify(mem)); }catch(e){} },
-  salvarData: function(id, d){ if(d) mem.real[id] = d; else delete mem.real[id]; this.grava(); },
-  salvarDesc: function(id, t){ if(t) mem.desc[id] = t; else delete mem.desc[id]; this.grava(); },
-  salvarCats: function(lista){ mem.cat = lista; this.grava(); },
-  entrar: function(u, s){ return u.trim().toLowerCase() === LOGIN_TESTE.usuario && s === LOGIN_TESTE.senha; }
+/* ====== ARMAZENAMENTO (Firebase) ======
+   calendario/dados : datas de realizacao, descricoes editadas e catequistas. Todos leem.
+   calendario/acesso: quem pode editar (editores) e quem ja pode ter podido (revogados).
+   Quem garante as permissoes sao as regras do banco, nao este codigo: o administrador e
+   fixo, pelo UID, e so ele convida ou revoga; editores gravam em calendario/dados.
+   As chaves abaixo sao publicas por natureza; servem para o site achar o projeto. */
+var FIREBASE = {
+  apiKey: "AIzaSyCzIc0XKKpkuAvv-Ghy78zAnzS2VNwOiqU",
+  authDomain: "calendario-catequese-a3eda.firebaseapp.com",
+  projectId: "calendario-catequese-a3eda",
+  storageBucket: "calendario-catequese-a3eda.firebasestorage.app",
+  messagingSenderId: "487689721378",
+  appId: "1:487689721378:web:c416303478e94cf0c15c7b"
 };
+var UID_ADMIN = "hCy1muev2KYJU97C2V3xN03wEJ63";
+var mem = {real:{}, desc:{}, cat:[]};
+var acesso = {editores:{}, revogados:{}};
+var sessao = {logado:false, admin:false, podeEditar:false, email:""};
+var docDados = null, docAcesso = null, autent = null, pararAcesso = null;
+var Armazem = {
+  disponivel: false,
+  iniciar: function(aoDados, aoSessao){
+    if(!window.firebase){ aoDados(false); return; }
+    try{
+      firebase.initializeApp(FIREBASE);
+      autent = firebase.auth(); autent.languageCode = "pt-BR";
+      var bd = firebase.firestore();
+      docDados = bd.collection("calendario").doc("dados");
+      docAcesso = bd.collection("calendario").doc("acesso");
+      this.disponivel = true;
+      docDados.onSnapshot(function(s){
+        var d = s.data() || {};
+        mem = {real:d.real || {}, desc:d.desc || {}, cat:d.cat || []};
+        aoDados(true);
+      }, function(){ aoDados(false); });
+      autent.onAuthStateChanged(function(u){
+        if(pararAcesso){ pararAcesso(); pararAcesso = null; }
+        acesso = {editores:{}, revogados:{}};
+        if(!u){ sessao = {logado:false, admin:false, podeEditar:false, email:""}; aoSessao(); return; }
+        var admin = u.uid === UID_ADMIN;
+        sessao = {logado:true, admin:admin, podeEditar:admin, email:u.email || "", conferindo:!admin};
+        aoSessao();
+        pararAcesso = docAcesso.onSnapshot(function(s){
+          var d = s.data() || {};
+          acesso = {editores:d.editores || {}, revogados:d.revogados || {}};
+          sessao.podeEditar = admin || !!acesso.editores[u.uid]; sessao.conferindo = false; aoSessao();
+        }, function(){ sessao.podeEditar = admin; sessao.conferindo = false; aoSessao(); });
+      });
+    }catch(e){ this.disponivel = false; aoDados(false); }
+  },
+  campo: function(grupo, id, valor){
+    var o = {}, g = {}; g[id] = valor || firebase.firestore.FieldValue.delete(); o[grupo] = g;
+    if(valor) mem[grupo][id] = valor; else delete mem[grupo][id];
+    return docDados.set(o, {merge:true});
+  },
+  salvarData: function(id, d){ return this.campo("real", id, d); },
+  salvarDesc: function(id, t){ return this.campo("desc", id, t); },
+  salvarCats: function(lista){ mem.cat = lista; return docDados.set({cat:lista}, {merge:true}); },
+  entrar: function(email, senha){ return autent.signInWithEmailAndPassword(email.trim(), senha); },
+  sair: function(){ return autent ? autent.signOut() : Promise.resolve(); },
+  redefinir: function(email){ return autent.sendPasswordResetEmail(email.trim()); },
+  /* Cria a conta numa segunda conexao, para o administrador nao ser deslogado, com uma senha
+     aleatoria que ninguem ve; a pessoa define a propria senha pelo e-mail que recebe. */
+  convidar: function(email){
+    email = email.trim().toLowerCase();
+    for(var uid in acesso.revogados){ if(acesso.revogados[uid] === email) return this.liberar(uid, email); }
+    var seg = firebase.apps.filter(function(a){ return a.name === "convite"; })[0] || firebase.initializeApp(FIREBASE, "convite");
+    var a2 = seg.auth(); a2.languageCode = "pt-BR";
+    var bytes = new Uint8Array(24); crypto.getRandomValues(bytes);
+    var senha = Array.prototype.map.call(bytes, function(b){ return ("0" + b.toString(16)).slice(-2); }).join("") + "Aa!";
+    var self = this;
+    return a2.createUserWithEmailAndPassword(email, senha).then(function(c){
+      var uid = c.user.uid;
+      return a2.signOut().then(function(){ return self.liberar(uid, email); }).then(function(){ return autent.sendPasswordResetEmail(email); });
+    });
+  },
+  liberar: function(uid, email){
+    var e = {}, r = {}; e[uid] = email; r[uid] = firebase.firestore.FieldValue.delete();
+    return docAcesso.set({editores:e, revogados:r}, {merge:true});
+  },
+  revogar: function(uid, email){
+    var e = {}, r = {}; e[uid] = firebase.firestore.FieldValue.delete(); r[uid] = email;
+    return docAcesso.set({editores:e, revogados:r}, {merge:true});
+  }
+};
+function falhou(){ var a = $("avisoSalvar"); if(a) a.textContent = "Não foi possível salvar. Confira a conexão e se você continua logado."; }
+function gravou(p){ var a = $("avisoSalvar"); if(a) a.textContent = ""; if(p && p.catch) p.catch(falhou); }
 
 var DADOS = montaBase();
-Armazem.carregar();
 var MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 var DIAS = ["dom.","seg.","ter.","qua.","qui.","sex.","sáb."];
 var PUB = {crianca:"Crianças", jovem:"Jovens (Crisma)", adulto:"Adultos"};
@@ -417,7 +499,7 @@ function abreDet(id){
   $("modalDet").querySelector(".fechar").focus();
 }
 function fechaTudo(){
-  $("modalDet").classList.remove("aberto"); $("modalCats").classList.remove("aberto"); $("modalLogin").classList.remove("aberto"); $("formLogin").reset(); aberto = null;
+  $("modalDet").classList.remove("aberto"); $("modalCats").classList.remove("aberto"); $("modalUsers").classList.remove("aberto"); $("modalLogin").classList.remove("aberto"); $("formLogin").reset(); aberto = null;
   if(focoAntes && focoAntes.focus){ try{ focoAntes.focus(); }catch(e){} } focoAntes = null;
 }
 $("detCorpo").addEventListener("click", function(ev){
@@ -426,9 +508,9 @@ $("detCorpo").addEventListener("click", function(ev){
   var bt = ev.target.closest("button"); if(!bt) return;
   if(bt.id === "detSalvar"){
     var t = $("detTexto").value.trim(), orig = DESC[r.id.split("~")[0]] || "";
-    Armazem.salvarDesc(r.id, t === orig ? "" : t); abreDet(r.id);
+    gravou(Armazem.salvarDesc(r.id, t === orig ? "" : t)); abreDet(r.id);
   }
-  if(bt.id === "detPadrao"){ Armazem.salvarDesc(r.id, ""); abreDet(r.id); }
+  if(bt.id === "detPadrao"){ gravou(Armazem.salvarDesc(r.id, "")); abreDet(r.id); }
 });
 
 ["fCiclo","fAno","fMes","fEtapa","fCat","fQuem","fFuturas"].forEach(function(id){ $(id).addEventListener("change", desenha); });
@@ -439,12 +521,12 @@ $("btnLimpar").addEventListener("click", function(){
 });
 $("resultado").addEventListener("change", function(ev){
   var el = ev.target;
-  if(el.matches && el.matches("input[type=date][data-id]") && document.body.classList.contains("adm")){ Armazem.salvarData(el.getAttribute("data-id"), el.value); desenha(); }
+  if(el.matches && el.matches("input[type=date][data-id]") && document.body.classList.contains("adm")){ gravou(Armazem.salvarData(el.getAttribute("data-id"), el.value)); desenha(); }
 });
 $("resultado").addEventListener("click", function(ev){
   var alvo = ev.target.closest ? ev.target.closest("[data-det],[data-limpar]") : null; if(!alvo) return;
   if(alvo.hasAttribute("data-det")) abreDet(alvo.getAttribute("data-det"));
-  else if(document.body.classList.contains("adm")){ Armazem.salvarData(alvo.getAttribute("data-limpar"), ""); desenha(); }
+  else if(document.body.classList.contains("adm")){ gravou(Armazem.salvarData(alvo.getAttribute("data-limpar"), "")); desenha(); }
 });
 
 document.addEventListener("click", function(ev){
@@ -458,16 +540,73 @@ $("btnAdm").addEventListener("click", function(){
 });
 $("formLogin").addEventListener("submit", function(ev){
   ev.preventDefault();
-  if(Armazem.entrar($("lUser").value, $("lPass").value)){ document.body.classList.add("adm"); rotulos(); fechaTudo(); }
-  else { $("lErro").textContent = "Usuário ou senha incorretos."; }
+  if(!Armazem.disponivel){ $("lErro").textContent = "Sem conexão com o banco de dados. Recarregue a página e tente de novo."; return; }
+  $("lErro").textContent = ""; $("lOk").textContent = ""; $("btnEntrar").disabled = true;
+  Armazem.entrar($("lUser").value, $("lPass").value).then(function(){ fechaTudo(); })
+    .catch(function(e){
+      var c = e && e.code || "";
+      $("lErro").textContent = c === "auth/too-many-requests" ? "Muitas tentativas. Espere alguns minutos e tente de novo."
+        : c === "auth/network-request-failed" ? "Sem conexão. Confira a internet e tente de novo."
+        : "E-mail ou senha incorretos.";
+    }).then(function(){ $("btnEntrar").disabled = false; });
 });
-function sair(){ document.body.classList.remove("adm"); rotulos(); }
+function sair(){ Armazem.sair(); }
+$("btnEsqueci").addEventListener("click", function(){
+  var email = $("lUser").value.trim(); $("lErro").textContent = ""; $("lOk").textContent = "";
+  if(!Armazem.disponivel){ $("lErro").textContent = "Sem conexão com o banco de dados. Recarregue a página e tente de novo."; return; }
+  if(!email){ $("lErro").textContent = "Digite o seu e-mail no campo acima e clique de novo."; $("lUser").focus(); return; }
+  Armazem.redefinir(email).then(function(){ $("lOk").textContent = "Se houver uma conta com esse e-mail, enviamos as instruções para criar uma senha nova. Confira também a caixa de spam."; })
+    .catch(function(e){ $("lErro").textContent = (e && e.code) === "auth/invalid-email" ? "Esse e-mail não parece válido." : "Não foi possível enviar agora. Tente de novo em alguns minutos."; });
+});
+
+/* ====== USUARIOS COM ACESSO (so o administrador) ====== */
+var revogando = null;
+function desenhaUsers(msg, ok){
+  var eds = Object.keys(acesso.editores).map(function(u){ return {uid:u, email:acesso.editores[u]}; }).sort(function(a,b){ return a.email < b.email ? -1 : 1; });
+  var rev = Object.keys(acesso.revogados).map(function(u){ return {uid:u, email:acesso.revogados[u]}; }).sort(function(a,b){ return a.email < b.email ? -1 : 1; });
+  var h = '<h4 style="margin-top:0">Quem pode editar</h4><ul class="cat-lista">'
+    + '<li><div><div class="nome">'+esc(sessao.email)+'</div><div class="turmas">Administrador (você). Convida e revoga os demais.</div></div></li>'
+    + eds.map(function(p){ return '<li><div><div class="nome">'+esc(p.email)+'</div><div class="turmas">Editor: grava datas, descrições e catequistas.</div></div><span class="acoes">'
+        + (revogando === p.uid ? '<button class="botao pequeno perigo" type="button" data-rv-ok="'+esc(p.uid)+'">'+IC.lixo+'Confirmar</button><button class="botao pequeno" type="button" data-rv-nao>Cancelar</button>'
+                               : '<button class="botao pequeno perigo" type="button" data-rv="'+esc(p.uid)+'">Revogar acesso</button>')+'</span></li>'; }).join("")
+    + '</ul>';
+  if(rev.length) h += '<h4>Acesso revogado</h4><ul class="cat-lista">'+rev.map(function(p){ return '<li><div><div class="nome">'+esc(p.email)+'</div><div class="turmas">Não consegue mais gravar. A conta continua existindo.</div></div><span class="acoes"><button class="botao pequeno" type="button" data-lib="'+esc(p.uid)+'">Devolver acesso</button></span></li>'; }).join("")+'</ul>';
+  h += '<h4>Convidar alguém</h4><form id="formConvite"><div class="campo"><label for="uEmail">E-mail da pessoa</label><input type="email" id="uEmail" autocomplete="off"></div>'
+    + '<p class="erro" id="uErro" role="alert">'+(ok ? "" : esc(msg || ""))+'</p><p class="ok" id="uOk" role="status">'+(ok ? esc(msg || "") : "")+'</p>'
+    + '<div class="acoes"><button class="botao cheio" type="submit" id="btnConvidar">'+IC.salvar+'Convidar</button></div></form>'
+    + '<p class="nota">A pessoa recebe um e-mail para criar a própria senha; você não fica sabendo qual é. Se o e-mail não chegar, ela pode usar "Esqueci minha senha" na tela de entrada.</p>';
+  $("usersCorpo").innerHTML = h;
+}
+$("btnUsers").addEventListener("click", function(){ if(!sessao.admin) return; focoAntes = $("btnUsers"); revogando = null; desenhaUsers(); $("modalUsers").classList.add("aberto"); $("modalUsers").querySelector(".fechar").focus(); });
+$("usersCorpo").addEventListener("click", function(ev){
+  var b = ev.target.closest("button"); if(!b || !sessao.admin) return;
+  if(b.hasAttribute("data-rv")){ revogando = b.getAttribute("data-rv"); desenhaUsers(); }
+  else if(b.hasAttribute("data-rv-nao")){ revogando = null; desenhaUsers(); }
+  else if(b.hasAttribute("data-rv-ok")){ var u = b.getAttribute("data-rv-ok"); revogando = null; Armazem.revogar(u, acesso.editores[u]).catch(function(){ desenhaUsers("Não foi possível revogar. Tente de novo."); }); }
+  else if(b.hasAttribute("data-lib")){ var v = b.getAttribute("data-lib"); Armazem.liberar(v, acesso.revogados[v]).catch(function(){ desenhaUsers("Não foi possível devolver o acesso. Tente de novo."); }); }
+});
+$("usersCorpo").addEventListener("submit", function(ev){
+  ev.preventDefault(); if(!sessao.admin) return;
+  var email = $("uEmail").value.trim().toLowerCase();
+  if(!email){ desenhaUsers("Digite o e-mail da pessoa."); return; }
+  if(email === sessao.email.toLowerCase()){ desenhaUsers("Esse é o seu próprio e-mail."); return; }
+  for(var u in acesso.editores){ if(acesso.editores[u] === email){ desenhaUsers("Essa pessoa já tem acesso."); return; } }
+  $("btnConvidar").disabled = true;
+  Armazem.convidar(email).then(function(){ desenhaUsers("Acesso liberado para " + email + ".", true); })
+    .catch(function(e){
+      var c = e && e.code || "";
+      desenhaUsers(c === "auth/email-already-in-use" ? "Já existe uma conta com esse e-mail que não foi criada por este painel. Me avise para liberarmos manualmente."
+        : c === "auth/invalid-email" ? "Esse e-mail não parece válido."
+        : "Não foi possível convidar agora. Confira a conexão e tente de novo.");
+    });
+});
 function rotulos(){
   var adm = document.body.classList.contains("adm");
   $("btnAdm").innerHTML = adm ? IC.sair+"Sair do modo coordenador" : IC.cadeado+"Área do coordenador";
   $("btnAdm").className = adm ? "botao" : "botao cheio";
   $("btnLimpar").innerHTML = IC.limpar+"Limpar filtros";
   $("btnCats").innerHTML = IC.pessoas+"Catequistas";
+  $("btnUsers").innerHTML = IC.cadeado+"Usuários";
 }
 rotulos();
 $("btnSair").addEventListener("click", sair);
@@ -505,7 +644,7 @@ $("catsCorpo").addEventListener("click", function(ev){
   else if(b.hasAttribute("data-ed-nao")){ editando = null; desenhaCats(); }
   else if(b.hasAttribute("data-rm")){ removendo = b.getAttribute("data-rm"); desenhaCats(); }
   else if(b.hasAttribute("data-rm-nao")){ removendo = null; desenhaCats(); }
-  else if(b.hasAttribute("data-rm-ok")){ var id = b.getAttribute("data-rm-ok"); Armazem.salvarCats(mem.cat.filter(function(c){ return c.id !== id; })); if(editando === id) editando = null; removendo = null; desenhaCats(); montaQuem(); desenha(); }
+  else if(b.hasAttribute("data-rm-ok")){ var id = b.getAttribute("data-rm-ok"); gravou(Armazem.salvarCats(mem.cat.filter(function(c){ return c.id !== id; }))); if(editando === id) editando = null; removendo = null; desenhaCats(); montaQuem(); desenha(); }
 });
 $("catsCorpo").addEventListener("submit", function(ev){
   ev.preventDefault(); if(!document.body.classList.contains("adm")) return;
@@ -515,11 +654,25 @@ $("catsCorpo").addEventListener("submit", function(ev){
   var lista = mem.cat.slice();
   if(editando){ lista = lista.map(function(c){ return c.id === editando ? {id:c.id, nome:nome, turmas:turmas} : c; }); }
   else lista.push({id:"c"+Date.now().toString(36), nome:nome, turmas:turmas});
-  Armazem.salvarCats(lista); editando = null; removendo = null; desenhaCats(); montaQuem(); desenha();
+  gravou(Armazem.salvarCats(lista)); editando = null; removendo = null; desenhaCats(); montaQuem(); desenha();
 });
 
 montaFiltros();
 desenha();
+Armazem.iniciar(function(){
+  montaQuem(); desenha();
+  if($("modalCats").classList.contains("aberto") && !editando && !removendo) desenhaCats();
+}, function(){
+  document.body.classList.toggle("adm", sessao.podeEditar);
+  document.body.classList.toggle("dono", sessao.admin);
+  rotulos();
+  if(sessao.logado && !sessao.podeEditar && !sessao.conferindo){
+    Armazem.sair();
+    focoAntes = $("btnAdm"); $("modalLogin").classList.add("aberto");
+    $("lErro").textContent = "Essa conta não tem permissão para editar. Fale com o coordenador.";
+  }
+  if($("modalUsers").classList.contains("aberto")){ if(sessao.admin){ if(!revogando) desenhaUsers(); } else fechaTudo(); }
+});
 })();
 </script>
 </body>

@@ -18,4 +18,4 @@ Altere os arquivos em `fonte/`, rode `node montar.js` e envie as mudanças. O si
 ## Situação dos dados
 
 - Datas marcadas com (ESTIMADO) ainda não têm calendário oficial da Diocese.
-- Datas de realização, descrições editadas e catequistas ficam, por enquanto, só no navegador de quem preencheu. O login do coordenador é provisório.
+- Datas de realização, descrições editadas e catequistas ficam no Firebase (projeto calendario-catequese-a3eda, documento calendario/dados). Todos leem; só o coordenador, logado, grava.
