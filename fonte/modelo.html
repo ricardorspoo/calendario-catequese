@@ -444,7 +444,7 @@ function montaFiltros(){
   opcoes($("fCat"), Object.keys(CAT).map(function(k){ return [k, CAT[k]]; }), "Todos");
   montaEtapas(); montaQuem();
 }
-function montaQuem(){ opcoes($("fQuem"), mem.cat.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome, "pt-BR"); }).map(function(c){ return [c.id, c.nome]; }), "Todos"); }
+function montaQuem(){ opcoes($("fQuem"), [["*","Com catequista"],["-","Sem catequista"]].concat(mem.cat.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome, "pt-BR"); }).map(function(c){ return [c.id, c.nome]; })), "Todos"); }
 function montaEtapas(){
   var pub = $("fPub").value;
   opcoes($("fEtapa"), TURMAS.filter(function(t){ return !pub || t[0] === pub; }).map(function(t){ return [t[0]+"|"+t[1], rotuloEtapa(t[0], t[1])]; }), "Todas");
@@ -456,7 +456,9 @@ function filtra(){
     if(p && r.pub !== p) return false;
     if(e){ var pe = e.split("|"); if(r.pub !== pe[0] || (pe[0] !== "adulto" && r.et !== pe[1])) return false; }
     if(t && r.cat !== t) return false;
-    if(q && !catsDe(r).some(function(c){ return c.id === q; })) return false;
+    if(q === "*"){ if(!catsDe(r).length) return false; }
+    else if(q === "-"){ if(catsDe(r).length) return false; }
+    else if(q && !catsDe(r).some(function(c){ return c.id === q; })) return false;
     var k = chave(r), f = fim(r);
     if(a && k.slice(0,4) !== a && f.slice(0,4) !== a) return false;
     if(m && +k.slice(5,7) !== +m && +f.slice(5,7) !== +m) return false;
