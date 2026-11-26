@@ -29,8 +29,14 @@ button,select,input,textarea{font:inherit;color:inherit}
 header.topo{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-areas:"esq txt dir";gap:26px;align-items:center;padding:22px 0 16px;text-align:center}
 .topo .marcas{display:flex;align-items:center;justify-content:space-between;gap:18px}
 .topo .esq{grid-area:esq} .topo .dir{grid-area:dir} .topo .txt{grid-area:txt;min-width:0}
-.topo img{height:100px;width:auto;display:block}
-.topo img.santo{height:104px}
+/* Alturas em proporcao: o desenho de Sao Judas inclui o machado acima da cabeca, entao
+   precisa de 8% a mais para a figura ficar do tamanho da de Sao Tomas. --u e a escala geral. */
+.topo{--u:1px}
+.topo img{width:auto;display:block}
+.topo img.m-cat{height:calc(var(--u) * 96)}
+.topo img.m-judas{height:calc(var(--u) * 108)}
+.topo img.m-tomas{height:calc(var(--u) * 100)}
+.topo img.m-dio{height:calc(var(--u) * 106)}
 .lema1{font-family:var(--cursiva);font-style:italic;color:var(--azul-titulo);font-size:1.1rem;margin:0}
 .lema2{font-style:italic;font-weight:700;color:var(--vermelho);font-size:.9rem;margin:2px 0 10px;letter-spacing:.01em}
 .dioc{font-weight:700;font-size:.8rem;letter-spacing:.12em;color:var(--cinza);margin:0}
@@ -151,7 +157,7 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
 @media (max-width:900px){
   header.topo{grid-template-columns:1fr 1fr;grid-template-areas:"esq dir" "txt txt";gap:12px 18px;padding-top:16px}
   .topo .esq{justify-self:end} .topo .dir{justify-self:start}
-  .topo img{height:72px} .topo img.santo{height:76px}
+  .topo{--u:.72px}
 }
 @media (max-width:860px){
   .filtros{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -163,8 +169,7 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
   .item .prev{border-left:0}
 }
 @media (max-width:480px){
-  .topo img{height:56px}
-  .topo img.santo{height:60px}
+  .topo{--u:.56px}
   .lema1{font-size:.92rem} .lema2{font-size:.72rem}
   .filtros{grid-template-columns:repeat(2,minmax(0,1fr))}
   .barra-topo .botao{width:100%}
@@ -176,7 +181,7 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
 <body>
 <div class="pagina">
   <header class="topo">
-    <div class="marcas esq"><img src="/*__CAT__*/" alt="Catequese, Diocese de Guarulhos"><img class="santo" src="/*__JUDAS__*/" alt="São Judas Tadeu"></div>
+    <div class="marcas esq"><img class="m-cat" src="/*__CAT__*/" alt="Catequese, Diocese de Guarulhos"><img class="m-judas" src="/*__JUDAS__*/" alt="São Judas Tadeu"></div>
     <div class="txt">
       <p class="lema1">Iniciação à vida Cristã:</p>
       <p class="lema2">“O CAMINHO PARA FORMAR DISCÍPULOS”</p>
@@ -184,7 +189,7 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
       <h1>Calendário da Catequese</h1>
       <p class="capela">Capela São Judas Tadeu, Paróquia Sagrada Família</p>
     </div>
-    <div class="marcas dir"><img class="santo" src="/*__TOMAS__*/" alt="São Tomás de Aquino"><img src="/*__DIO__*/" alt="Brasão da Diocese de Guarulhos"></div>
+    <div class="marcas dir"><img class="m-tomas" src="/*__TOMAS__*/" alt="São Tomás de Aquino"><img class="m-dio" src="/*__DIO__*/" alt="Brasão da Diocese de Guarulhos"></div>
   </header>
   <div class="regua"></div>
   <div class="barra-topo"><span class="contagem" id="contagem"></span><button class="botao" id="btnAdm" type="button"></button></div>
