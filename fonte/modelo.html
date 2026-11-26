@@ -635,7 +635,29 @@ function desenhaCats(msg){
   h += '<p class="erro" id="cErro" role="alert">'+(msg || "")+'</p><div class="acoes">'
     + (ed ? '<button class="botao" type="button" data-ed-nao>Cancelar edição</button>' : '')
     + '<button class="botao cheio" type="submit">'+IC.salvar+(ed ? "Salvar alterações" : "Cadastrar")+'</button></div></form>';
+  if(sessao.admin) h += '<h4>Importar dados do teste</h4><form id="formImporta"><div class="campo"><label for="impTexto">Cole aqui o texto copiado do endereço de teste</label><textarea id="impTexto" style="min-height:80px"></textarea></div>'
+    + '<p class="erro" id="impErro" role="alert"></p><p class="ok" id="impOk" role="status"></p><div class="acoes"><button class="botao" type="submit">Importar</button></div></form>'
+    + '<p class="nota">Soma ao que já existe: não apaga nada e não duplica catequista com o mesmo nome.</p>';
   $("catsCorpo").innerHTML = h;
+}
+function importar(texto){
+  var d; try{ d = JSON.parse(texto); }catch(e){ return Promise.reject("formato"); }
+  if(!d || typeof d !== "object") return Promise.reject("formato");
+  var validas = {}; DADOS.forEach(function(r){ validas[r.id] = true; });
+  var real = {}, desc = {}, nr = 0, nd = 0, nc = 0;
+  Object.keys(d.real || {}).forEach(function(k){ if(validas[k] && /^\d{4}-\d{2}-\d{2}$/.test(d.real[k]) && !mem.real[k]){ real[k] = d.real[k]; nr++; } });
+  Object.keys(d.desc || {}).forEach(function(k){ if(validas[k] && typeof d.desc[k] === "string" && d.desc[k].length < 3000 && !mem.desc[k]){ desc[k] = d.desc[k]; nd++; } });
+  var lista = mem.cat.slice(), turmasOk = {};
+  CICLOS.forEach(function(c){ TURMAS.forEach(function(t){ turmasOk[chaveTurma(c[0], t[0], t[1])] = true; }); });
+  (Array.isArray(d.cat) ? d.cat : []).forEach(function(c){
+    if(!c || typeof c.nome !== "string") return;
+    var nome = c.nome.trim().slice(0, 60); if(!nome) return;
+    if(lista.some(function(x){ return x.nome.toLowerCase() === nome.toLowerCase(); })) return;
+    lista.push({id:"c"+Date.now().toString(36)+nc, nome:nome, turmas:(Array.isArray(c.turmas) ? c.turmas : []).filter(function(t){ return turmasOk[t]; })}); nc++;
+  });
+  if(!nr && !nd && !nc) return Promise.resolve("Nada novo para importar: tudo isso já está no app.");
+  Object.keys(real).forEach(function(k){ mem.real[k] = real[k]; }); Object.keys(desc).forEach(function(k){ mem.desc[k] = desc[k]; }); mem.cat = lista;
+  return docDados.set({real:real, desc:desc, cat:lista}, {merge:true}).then(function(){ return "Importado: "+nc+" catequista(s), "+nr+" data(s) de realização e "+nd+" descrição(ões)."; });
 }
 $("btnCats").addEventListener("click", function(){ focoAntes = $("btnCats"); editando = null; removendo = null; desenhaCats(); $("modalCats").classList.add("aberto"); $("modalCats").querySelector(".fechar").focus(); });
 $("catsCorpo").addEventListener("click", function(ev){
@@ -648,6 +670,12 @@ $("catsCorpo").addEventListener("click", function(ev){
 });
 $("catsCorpo").addEventListener("submit", function(ev){
   ev.preventDefault(); if(!document.body.classList.contains("adm")) return;
+  if(ev.target.id === "formImporta"){
+    if(!sessao.admin) return;
+    importar($("impTexto").value.trim()).then(function(msg){ montaQuem(); desenha(); desenhaCats(); $("impOk").textContent = msg; })
+      .catch(function(e){ $("impErro").textContent = e === "formato" ? "Esse texto não é o que o endereço de teste gera. Copie de novo pelo botão Copiar." : "Não foi possível importar. Confira a conexão e tente de novo."; });
+    return;
+  }
   var nome = $("cNome").value.trim().replace(/\s+/g, " ");
   if(!nome){ desenhaCats("Digite o nome do catequista."); $("cNome").focus(); return; }
   var turmas = Array.prototype.map.call($("catsCorpo").querySelectorAll(".grade input:checked"), function(i){ return i.value; });
