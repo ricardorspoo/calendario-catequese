@@ -270,7 +270,24 @@ var UID_ADMIN = "hCy1muev2KYJU97C2V3xN03wEJ63";
 var mem = {real:{}, desc:{}, cat:[]};
 var acesso = {editores:{}, revogados:{}};
 var sessao = {logado:false, admin:false, podeEditar:false, email:""};
-var docDados = null, docAcesso = null, autent = null, pararAcesso = null;
+var docDados = null, docAcesso = null, autent = null, pararAcesso = null, carregou = false, semeado = false;
+/* Catequistas que ja estavam cadastrados na versao de teste (transcritos de um print do
+   coordenador). Entram no banco uma unica vez, no primeiro acesso do coordenador principal,
+   e so se a lista estiver vazia. Depois disso quem manda e o cadastro do app. */
+var SEMENTE = [
+  {id:"s1", nome:"Carla", turmas:["25/26|crianca|2ª etapa","25/26|crianca|4ª etapa","26/27|crianca|1ª etapa","26/27|crianca|3ª etapa","26/27|jovem|1ª etapa"]},
+  {id:"s2", nome:"Carolina", turmas:["26/27|jovem|1ª etapa","26/27|adulto|","27/28|jovem|2ª etapa"]},
+  {id:"s3", nome:"Ricardo", turmas:["27/28|adulto|"]},
+  {id:"s4", nome:"Thais", turmas:["25/26|crianca|1ª etapa","26/27|crianca|2ª etapa"]},
+  {id:"s5", nome:"Thiago", turmas:["26/27|adulto|"]}
+];
+function semear(){
+  if(!carregou || semeado || !sessao.admin || !docDados) return;
+  semeado = true;
+  if(mem.cat.length){ docDados.set({semente:true}, {merge:true}); return; }
+  mem.cat = SEMENTE.slice();
+  docDados.set({cat:mem.cat, semente:true}, {merge:true});
+}
 var Armazem = {
   disponivel: false,
   iniciar: function(aoDados, aoSessao){
@@ -285,6 +302,7 @@ var Armazem = {
       docDados.onSnapshot(function(s){
         var d = s.data() || {};
         mem = {real:d.real || {}, desc:d.desc || {}, cat:d.cat || []};
+        carregou = true; semeado = !!d.semente;
         aoDados(true);
       }, function(){ aoDados(false); });
       autent.onAuthStateChanged(function(u){
@@ -688,12 +706,13 @@ $("catsCorpo").addEventListener("submit", function(ev){
 montaFiltros();
 desenha();
 Armazem.iniciar(function(){
+  semear();
   montaQuem(); desenha();
   if($("modalCats").classList.contains("aberto") && !editando && !removendo) desenhaCats();
 }, function(){
   document.body.classList.toggle("adm", sessao.podeEditar);
   document.body.classList.toggle("dono", sessao.admin);
-  rotulos();
+  rotulos(); semear();
   if(sessao.logado && !sessao.podeEditar && !sessao.conferindo){
     Armazem.sair();
     focoAntes = $("btnAdm"); $("modalLogin").classList.add("aberto");
