@@ -8,7 +8,7 @@ Calendário das celebrações da catequese da Capela São Judas Tadeu, Paróquia
 - `fonte/modelo.html`: estrutura, visual e funcionamento da página.
 - `fonte/dados.js`: as celebrações de cada calendário e a regra das datas estimadas.
 - `fonte/descricoes.js`: os textos da caixa de detalhes.
-- `fonte/*.uri`: as logos da Catequese e da Diocese.
+- `fonte/*.uri`: as logos da Catequese e da Diocese e os desenhos de São Judas Tadeu e São Tomás de Aquino.
 - `montar.js`: junta os arquivos de `fonte/` e gera o `index.html`.
 
 ## Como atualizar

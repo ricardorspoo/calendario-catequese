@@ -25,8 +25,11 @@ button,select,input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--azul-titulo);outline-offset:2px}
 .pagina{max-width:1100px;margin:0 auto;padding:0 16px 56px}
 
-header.topo{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;padding:22px 0 16px;text-align:center}
-.topo img{height:88px;width:auto;display:block}
+header.topo{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"esq txt dir";gap:16px;align-items:center;padding:22px 0 16px;text-align:center}
+.topo .marcas{display:flex;align-items:center;gap:18px}
+.topo .esq{grid-area:esq} .topo .dir{grid-area:dir} .topo .txt{grid-area:txt;min-width:0}
+.topo img{height:84px;width:auto;display:block}
+.topo img.santo{height:96px}
 .lema1{font-family:var(--cursiva);font-style:italic;color:var(--azul-titulo);font-size:1.1rem;margin:0}
 .lema2{font-style:italic;font-weight:700;color:var(--vermelho);font-size:.9rem;margin:2px 0 10px;letter-spacing:.01em}
 .dioc{font-weight:700;font-size:.8rem;letter-spacing:.12em;color:var(--cinza);margin:0}
@@ -144,6 +147,11 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
 .grade input{width:18px;height:18px;accent-color:var(--azul);flex:none}
 @media (max-width:480px){.grade{grid-template-columns:1fr}}
 
+@media (max-width:900px){
+  header.topo{grid-template-columns:1fr 1fr;grid-template-areas:"esq dir" "txt txt";gap:12px 18px;padding-top:16px}
+  .topo .esq{justify-self:end} .topo .dir{justify-self:start}
+  .topo img{height:64px} .topo img.santo{height:74px}
+}
 @media (max-width:860px){
   .filtros{grid-template-columns:repeat(3,minmax(0,1fr))}
   .item{grid-template-columns:1fr 1fr}
@@ -154,8 +162,8 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
   .item .prev{border-left:0}
 }
 @media (max-width:480px){
-  header.topo{gap:8px;padding-top:14px}
-  .topo img{height:54px}
+  .topo img{height:50px}
+  .topo img.santo{height:58px}
   .lema1{font-size:.92rem} .lema2{font-size:.72rem}
   .filtros{grid-template-columns:repeat(2,minmax(0,1fr))}
   .barra-topo .botao{width:100%}
@@ -167,15 +175,15 @@ fieldset.turmas legend{font-size:.74rem;font-weight:700;letter-spacing:.06em;tex
 <body>
 <div class="pagina">
   <header class="topo">
-    <img src="/*__CAT__*/" alt="Catequese, Diocese de Guarulhos">
-    <div>
+    <div class="marcas esq"><img src="/*__CAT__*/" alt="Catequese, Diocese de Guarulhos"><img class="santo" src="/*__JUDAS__*/" alt="São Judas Tadeu"></div>
+    <div class="txt">
       <p class="lema1">Iniciação à vida Cristã:</p>
       <p class="lema2">“O CAMINHO PARA FORMAR DISCÍPULOS”</p>
       <p class="dioc">DIOCESE DE GUARULHOS</p>
       <h1>Calendário da Catequese</h1>
       <p class="capela">Capela São Judas Tadeu, Paróquia Sagrada Família</p>
     </div>
-    <img src="/*__DIO__*/" alt="Brasão da Diocese de Guarulhos">
+    <div class="marcas dir"><img class="santo" src="/*__TOMAS__*/" alt="São Tomás de Aquino"><img src="/*__DIO__*/" alt="Brasão da Diocese de Guarulhos"></div>
   </header>
   <div class="regua"></div>
   <div class="barra-topo"><span class="contagem" id="contagem"></span><button class="botao" id="btnAdm" type="button"></button></div>
